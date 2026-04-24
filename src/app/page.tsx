@@ -21,43 +21,69 @@ export default function MonitorDashboard() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  // Simulate real-time updates
+  // Fetch real-time updates from n8n
   useEffect(() => {
-    const interval = setInterval(() => {
-      setData((prev) => {
-        const newData = [...prev.slice(1)];
-        newData.push({
-          time: 'Now',
-          cpu: Math.floor(Math.random() * 30) + 10,
-          ram: Math.floor(Math.random() * 20) + 40,
-        });
-        return newData;
-      });
-    }, 5000);
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch('https://n8n.yugakurniawan.com/webhook/metrics');
+        if (response.ok) {
+          const newData = await response.json();
+          // Assuming webhook returns: { "cpu": 15, "ram": 50 }
+          setData((prev) => {
+            const nextData = [...prev.slice(1)];
+            nextData.push({
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              cpu: newData.cpu || 0,
+              ram: newData.ram || 0,
+            });
+            return nextData;
+          });
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data metrik dari n8n", error);
+      }
+    };
+
+    fetchMetrics(); // Call immediately
+    const interval = setInterval(fetchMetrics, 10000); // Fetch every 10 seconds
     return () => clearInterval(interval);
   }, []);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const newMsg = { id: Date.now(), role: 'user', text: input };
+    const userText = input;
+    const newMsg = { id: Date.now(), role: 'user', text: userText };
     setMessages((prev) => [...prev, newMsg]);
     setInput('');
     setIsTyping(true);
 
-    // Mock AI Response
-    setTimeout(() => {
+    try {
+      const response = await fetch('https://n8n.yugakurniawan.com/webhook/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userText })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Assuming webhook returns: { "reply": "teks balasan ai" }
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now() + 1, role: 'ai', text: data.reply || "Webhook n8n tidak mengembalikan format { reply: '...' }." }
+        ]);
+      } else {
+         throw new Error("Webhook mengembalikan error status.");
+      }
+    } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { 
-          id: Date.now() + 1, 
-          role: 'ai', 
-          text: 'Berdasarkan analisa simulasi saat ini, penggunaan resource didominasi oleh n8n (320MB) dan Next.js (46MB). Tidak ada anomali yang mencurigakan.' 
-        }
+        { id: Date.now() + 1, role: 'ai', text: "Gagal terhubung ke n8n. Pastikan workflow Webhook Chat sudah Aktif (Active) atau di-test." }
       ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -72,7 +98,7 @@ export default function MonitorDashboard() {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
               NEXUS Monitor
             </h1>
-            <p className="text-sm text-slate-400">bantukos.com / production</p>
+            <p className="text-sm text-slate-400">yugakurniawan.com / production</p>
           </div>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-sm text-emerald-400">
@@ -235,7 +261,7 @@ export default function MonitorDashboard() {
             <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <p className="text-[10px] text-amber-200/70 leading-tight">
-                Mode Simulasi. Hubungkan API n8n Webhook untuk mendapatkan data *real-time* dan analisa AI yang sesungguhnya.
+                Menunggu n8n. Jika error, pastikan Webhook di n8n sudah dibuat dan URL-nya tepat.
               </p>
             </div>
           </div>
