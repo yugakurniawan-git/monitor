@@ -67,19 +67,26 @@ export default function MonitorDashboard() {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        // Assuming webhook returns: { "reply": "teks balasan ai" }
-        setMessages((prev) => [
-          ...prev,
-          { id: Date.now() + 1, role: 'ai', text: data.reply || "Webhook n8n tidak mengembalikan format { reply: '...' }." }
-        ]);
+        const text = await response.text();
+        if (!text) {
+           throw new Error("Webhook n8n membalas tapi kosong (tidak ada teks). Cek node Respond to Webhook di n8n.");
+        }
+        try {
+          const data = JSON.parse(text);
+          setMessages((prev) => [
+            ...prev,
+            { id: Date.now() + 1, role: 'ai', text: data.reply || \`Error format: \${text}\` }
+          ]);
+        } catch (e) {
+          throw new Error(\`Bukan format JSON yang valid. Teks asli: \${text}\`);
+        }
       } else {
-         throw new Error("Webhook mengembalikan error status.");
+         throw new Error(\`Webhook error status: \${response.status}\`);
       }
-    } catch (error) {
+    } catch (error: any) {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, role: 'ai', text: "Gagal terhubung ke n8n. Pastikan workflow Webhook Chat sudah Aktif (Active) atau di-test." }
+        { id: Date.now() + 1, role: 'ai', text: \`Error Detail: \${error.message}\` }
       ]);
     } finally {
       setIsTyping(false);
