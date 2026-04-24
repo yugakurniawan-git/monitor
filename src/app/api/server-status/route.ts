@@ -10,7 +10,7 @@ export async function GET() {
     const { stdout: topOutput } = await execAsync('top -b -n 1 | head -n 15');
     const { stdout: freeOutput } = await execAsync('free -m');
     
-    const combinedOutput = \`=== TOP PROCESSES ===\\n\${topOutput}\\n\\n=== RAM USAGE ===\\n\${freeOutput}\`;
+    const combinedOutput = "=== TOP PROCESSES ===\\n" + topOutput + "\\n\\n=== RAM USAGE ===\\n" + freeOutput;
     
     return new NextResponse(combinedOutput, {
       status: 200,
