@@ -25,7 +25,7 @@ export default function MonitorDashboard() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch('/api/metrics');
+        const response = await fetch('https://n8n.yugakurniawan.com/webhook/metrics');
         if (response.ok) {
           const newData = await response.json();
           // Assuming webhook returns: { "cpu": 15, "ram": 50 }
@@ -60,7 +60,7 @@ export default function MonitorDashboard() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('https://n8n.yugakurniawan.com/webhook/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userText })
