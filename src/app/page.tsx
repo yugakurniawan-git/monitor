@@ -71,15 +71,21 @@ export default function MonitorDashboard() {
         if (!text) {
            throw new Error("Webhook n8n membalas tapi kosong (tidak ada teks). Cek node Respond to Webhook di n8n.");
         }
+        let aiText = text;
         try {
+          // Coba parse sebagai JSON kalau n8n mengirim format JSON
           const data = JSON.parse(text);
-          setMessages((prev) => [
-            ...prev,
-            { id: Date.now() + 1, role: 'ai', text: data.reply || ("Error format: " + text) }
-          ]);
+          if (data.reply) {
+            aiText = data.reply;
+          }
         } catch (e) {
-          throw new Error("Bukan format JSON yang valid. Teks asli: " + text);
+          // Jika gagal parse, berarti n8n mengirim teks biasa. Langsung gunakan teksnya!
         }
+        
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now() + 1, role: 'ai', text: aiText }
+        ]);
       } else {
          throw new Error("Webhook error status: " + response.status);
       }
