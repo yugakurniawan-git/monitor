@@ -75,18 +75,18 @@ export default function MonitorDashboard() {
           const data = JSON.parse(text);
           setMessages((prev) => [
             ...prev,
-            { id: Date.now() + 1, role: 'ai', text: data.reply || \`Error format: \${text}\` }
+            { id: Date.now() + 1, role: 'ai', text: data.reply || ("Error format: " + text) }
           ]);
         } catch (e) {
-          throw new Error(\`Bukan format JSON yang valid. Teks asli: \${text}\`);
+          throw new Error("Bukan format JSON yang valid. Teks asli: " + text);
         }
       } else {
-         throw new Error(\`Webhook error status: \${response.status}\`);
+         throw new Error("Webhook error status: " + response.status);
       }
     } catch (error: any) {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + 1, role: 'ai', text: \`Error Detail: \${error.message}\` }
+        { id: Date.now() + 1, role: 'ai', text: "Error Detail: " + error.message }
       ]);
     } finally {
       setIsTyping(false);
