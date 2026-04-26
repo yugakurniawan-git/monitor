@@ -20,6 +20,7 @@ export default function MonitorDashboard() {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [processes, setProcesses] = useState('Memuat data proses...');
 
   // Fetch real-time updates from n8n
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function MonitorDashboard() {
             });
             return nextData;
           });
+          setProcesses(newData.processes || 'Tidak ada data proses');
         }
       } catch (error) {
         console.error("Gagal mengambil data metrik dari n8n", error);
@@ -217,8 +219,23 @@ export default function MonitorDashboard() {
           </div>
         </div>
 
-        {/* Right Column: AI Assistant */}
-        <div className="glass-panel rounded-3xl flex flex-col h-[calc(100vh-10rem)] lg:h-auto min-h-[500px]">
+        {/* Right Column: Chat & Process List */}
+        <div className="space-y-6">
+          {/* Active Processes Terminal */}
+          <div className="glass-card p-6 min-h-[300px] flex flex-col border border-white/10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+              <span className="text-xs text-white/40 ml-2 font-mono uppercase tracking-widest">Active Processes</span>
+            </div>
+            <pre className="font-mono text-[10px] md:text-xs text-green-400/90 overflow-x-auto whitespace-pre leading-relaxed bg-black/20 p-4 rounded-lg flex-1">
+              {processes}
+            </pre>
+          </div>
+
+          {/* AI Chat Box */}
+          <div className="glass-card p-6 flex flex-col h-[calc(100vh-10rem)] lg:h-auto min-h-[500px]">
           <div className="p-5 border-b border-white/5 flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
               <Sparkles className="w-5 h-5 text-white" />

@@ -14,9 +14,14 @@ export async function GET() {
     const load = os.loadavg()[0];
     const cpuUsage = Math.min(Math.round((load / cpus) * 100), 100);
 
+    // 3. Dapatkan List Proses Realtime (Top 10 by RAM)
+    // Kita gunakan ps aux agar lebih detail
+    const { stdout: psOutput } = await execAsync('ps aux --sort=-%mem | head -n 11');
+
     return NextResponse.json({
       cpu: cpuUsage,
       ram: ramUsage,
+      processes: psOutput,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
