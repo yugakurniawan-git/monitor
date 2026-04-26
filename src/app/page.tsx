@@ -294,6 +294,7 @@ export default function MonitorDashboard() {
                 Menunggu n8n. Jika error, pastikan Webhook di n8n sudah dibuat dan URL-nya tepat.
               </p>
             </div>
+            </div>
           </div>
         </div>
 
