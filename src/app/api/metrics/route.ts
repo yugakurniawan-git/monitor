@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import os from 'os';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
+const execAsync = promisify(exec);
 export async function GET() {
   try {
     // 1. Hitung RAM Real
