@@ -25,7 +25,7 @@ export default function MonitorDashboard() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch('https://n8n.yugakurniawan.com/webhook/metrics');
+        const response = await fetch('/api/metrics');
         if (response.ok) {
           const newData = await response.json();
           // Assuming webhook returns: { "cpu": 15, "ram": 50 }

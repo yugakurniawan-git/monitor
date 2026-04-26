@@ -1,17 +1,26 @@
 import { NextResponse } from 'next/server';
+import os from 'os';
 
 export async function GET() {
   try {
-    // Server-side fetch to n8n (bypasses browser CORS)
-    const response = await fetch('https://n8n.yugakurniawan.com/webhook/metrics');
-    
-    if (!response.ok) {
-      return NextResponse.json({ error: 'n8n webhook error' }, { status: response.status });
-    }
-    
-    const data = await response.json();
-    return NextResponse.json(data);
+    // 1. Hitung RAM Real
+    const totalRam = os.totalmem();
+    const freeRam = os.freemem();
+    const ramUsage = Math.round(((totalRam - freeRam) / totalRam) * 100);
+
+    // 2. Hitung CPU Real (menggunakan load average 1 menit)
+    // loadavg returns [1m, 5m, 15m] load. Kita bagi dengan jumlah CPU core.
+    const cpus = os.cpus().length;
+    const load = os.loadavg()[0];
+    const cpuUsage = Math.min(Math.round((load / cpus) * 100), 100);
+
+    return NextResponse.json({
+      cpu: cpuUsage,
+      ram: ramUsage,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to connect to n8n' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch real metrics' }, { status: 500 });
   }
 }
+
