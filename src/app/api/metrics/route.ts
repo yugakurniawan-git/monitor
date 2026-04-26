@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { appendMetric } from '../history/route';
 
 const execAsync = promisify(exec);
 
@@ -32,6 +33,9 @@ export async function GET() {
         psOutput = 'ps command tidak tersedia di sistem ini';
       }
     }
+
+    // Simpan ke log historis setiap kali data diambil
+    appendMetric(cpuUsage, ramUsage);
 
     return NextResponse.json({
       cpu: cpuUsage,
