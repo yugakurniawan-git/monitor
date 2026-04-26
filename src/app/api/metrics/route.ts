@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
+
 export async function GET() {
   try {
     // 1. Hitung RAM Real
@@ -11,15 +12,26 @@ export async function GET() {
     const freeRam = os.freemem();
     const ramUsage = Math.round(((totalRam - freeRam) / totalRam) * 100);
 
-    // 2. Hitung CPU Real (menggunakan load average 1 menit)
-    // loadavg returns [1m, 5m, 15m] load. Kita bagi dengan jumlah CPU core.
+    // 2. Hitung CPU Real (load average 1 menit)
     const cpus = os.cpus().length;
     const load = os.loadavg()[0];
     const cpuUsage = Math.min(Math.round((load / cpus) * 100), 100);
 
-    // 3. Dapatkan List Proses Realtime (Top 10 by RAM)
-    // Kita gunakan ps aux agar lebih detail
-    const { stdout: psOutput } = await execAsync('ps aux --sort=-%mem | head -n 11');
+    // 3. Dapatkan List Proses - kompatibel dengan Alpine Linux (BusyBox ps)
+    let psOutput = 'Tidak ada data proses';
+    try {
+      // BusyBox ps tidak support --sort, pakai ps aux biasa lalu sort manual
+      const { stdout } = await execAsync('ps aux | head -n 15');
+      psOutput = stdout;
+    } catch {
+      // Fallback: gunakan /proc jika ps gagal
+      try {
+        const { stdout } = await execAsync('cat /proc/*/status 2>/dev/null | grep -E "Name:|VmRSS:" | paste - - | sort -k4 -rn | head -n 10');
+        psOutput = stdout || 'Proses tidak bisa dibaca';
+      } catch {
+        psOutput = 'ps command tidak tersedia di sistem ini';
+      }
+    }
 
     return NextResponse.json({
       cpu: cpuUsage,
@@ -28,9 +40,6 @@ export async function GET() {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch real metrics' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch real metrics: ' + String(error) }, { status: 500 });
   }
 }
-
-// Webhook auto-deploy test trigger
-// Webhook manual test trigger
