@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    pid: "host"
     restart: unless-stopped
     ports:
       - "3000:3000"
