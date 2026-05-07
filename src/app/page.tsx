@@ -71,7 +71,7 @@ export default function MonitorDashboard() {
       } catch { /* ignore */ }
     };
     fetchMetrics();
-    const iv = setInterval(fetchMetrics, 10000);
+    const iv = setInterval(fetchMetrics, 15000);
     return () => clearInterval(iv);
   }, []);
 
@@ -90,7 +90,7 @@ export default function MonitorDashboard() {
       } catch { /* ignore */ }
     };
     fetchContainers();
-    const iv = setInterval(fetchContainers, 15000);
+    const iv = setInterval(fetchContainers, 30000);
     return () => clearInterval(iv);
   }, []);
 
@@ -108,7 +108,7 @@ export default function MonitorDashboard() {
       setLogsLoading(false);
     };
     fetchLogs();
-    const iv = setInterval(fetchLogs, 8000);
+    const iv = setInterval(fetchLogs, 30000);
     return () => clearInterval(iv);
   }, [selectedContainer]);
 
